@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public interface IMetaLodTarget
 {
-    // getters
     float GetDistance();
     float GetFactorBounds();
     float GetFactorGeomComplexity();
@@ -12,8 +11,8 @@ public interface IMetaLodTarget
     float GetFactorVisualImpact();
     float GetUserFactor(string factorName);
 
-    // setters
     void SetLiveness(float liveness);
+
     void DebugOutput(string fmt, params object[] args);
 }
 
@@ -22,8 +21,11 @@ public static class UMetaLodConfig
     // the time interval of an update (could be done discretedly)
     public static float UpdateInterval = 0.5f;
 
+    // the time interval of an FPS update (could be done discretedly)
+    public static float FPSUpdateInterval = 5.0f;
+
     // debug option (would output debugging strings to lod target if enabled)
-    public static bool EnableDebuggingOutput = true;
+    public static bool EnableDebuggingOutput = false;
 
     // performance level (target platform horsepower indication)
     public static UPerfLevel PerformanceLevel = UPerfLevel.Medium;
@@ -36,8 +38,8 @@ public static class UMetaLodConfig
     };
 
     // heat attenuation parameters overriding (including the formula)
-    public static float DistInnerBound = 15.0f;
-    public static float DistOuterBound = 40.0f;
+    public static float DistInnerBound = 80.0f;
+    public static float DistOuterBound = 180.0f;
     public static float FpsLowerBound = 15.0f;
     public static float FpsStandard = 30.0f;
     public static float FpsUpperBound = 60.0f;
@@ -61,6 +63,14 @@ public partial class UMetaLod
         }
     }
 
+    public void RemoveTarget(IMetaLodTarget target)
+    {
+        if (_targets.Contains(target))
+        {
+            _targets.Remove(target);
+        }
+    }
+
     public void AddUserFactor(UImpactFactor userFactor)
     {
         if (!_userFactors.Contains(userFactor))
@@ -77,6 +87,9 @@ public partial class UMetaLod
             _updateTargets();
         }
     }
+
+    // accessor to targets
+    public HashSet<IMetaLodTarget> Targets { get { return _targets; } }
 
     // accessor to built-in factors (use this to modify default parameters in these factors)
     public UImpactFactor GetSysFactor(string name) { return _getSysFactor(name); }

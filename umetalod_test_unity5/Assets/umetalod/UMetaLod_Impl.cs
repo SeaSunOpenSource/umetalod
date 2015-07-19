@@ -24,11 +24,16 @@ public partial class UMetaLod
         if (deltaTime < UMetaLodConfig.UpdateInterval)
             return false;
 
-        int passedFrames = Time.frameCount - _lastUpdateFrameCount;
-        _currentFPS = (float)passedFrames / deltaTime;
-
-        _lastUpdateFrameCount = Time.frameCount;
         _lastUpdateTime = Time.realtimeSinceStartup;
+
+        // update fps as needed
+        float deltaFPSTime = Time.realtimeSinceStartup - _lastUpdateFPSTime;
+        if (deltaFPSTime >= UMetaLodConfig.FPSUpdateInterval)
+        {
+            int passedFrames = Time.frameCount - _lastUpdateFrameCount;
+            _currentFPS = (float)passedFrames / deltaTime;
+            _lastUpdateFrameCount = Time.frameCount;
+        }
 
         return true;
     }
@@ -106,5 +111,6 @@ public partial class UMetaLod
 
     // internal states
     private float _lastUpdateTime = 0.0f;
+    private float _lastUpdateFPSTime = 0.0f;
     private int _lastUpdateFrameCount = 0;
 }
