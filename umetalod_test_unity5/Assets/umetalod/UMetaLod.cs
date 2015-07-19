@@ -2,48 +2,57 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public struct UImpactFactor
-{
-    public string Name;
-    public float Weight;
-    public float UpperBound;
-    public float LowerBound;
-
-    public float Calculate(float value)
-    {
-        return 0.0f;
-    }
-}
-
-public class UHeatAttenuation
-{
-    public float DistInnerBound;
-    public float DistOuterBound;
-
-    public int PerfLevel;
-    public int FrameRate;
-
-    public float CalculateLiveness(float distance)
-    {
-        return 0.0f;
-    }
-}
-
 public interface IMetaLodTarget
 {
+    // getters
     float GetDistance();
-
     float GetFactorBounds();
     float GetFactorGeomComplexity();
     float GetFactorPSysComplexity();
     float GetFactorVisualImpact();
     float GetUserFactor(string factorName);
 
+    // setters
     void SetLiveness(float liveness);
+    void DebugOutput(string fmt, params object[] args);
 }
 
-public class UMetaLod 
+public static class UMetaLodConfig
 {
+    // the time interval of an update (could be done discretedly)
+    public static float UpdateInterval = 0.5f;
+
+    // debug option (would output debugging strings to lod target if enabled)
+    public static bool EnableDebuggingOutput = true;
+
+    // performance level (target platform horsepower indication)
+    public static UPerfLevel PerformanceLevel = UPerfLevel.Medium;
+    // performance level magnifier
+    public static Dictionary<UPerfLevel, float> PerfLevelScaleLut = new Dictionary<UPerfLevel, float> 
+    {
+        { UPerfLevel.Highend, 0.2f },
+        { UPerfLevel.Medium, 0.0f },
+        { UPerfLevel.Lowend, -0.2f },
+    };
+
+    // heat attenuation parameters overriding (including the formula)
+    public static float DistInnerBound = 15.0f;
+    public static float DistOuterBound = 40.0f;
+    public static float FpsLowerBound = 15.0f;
+    public static float FpsStandard = 30.0f;
+    public static float FpsUpperBound = 60.0f;
+    public static float FpsMinifyFactor = -0.2f;
+    public static float FpsMagnifyFactor = 0.2f;
+    public static fnHeatAttenuate HeatAttenuationFormula = UMetaLodDefaults.HeatAttenuation;
+}
+
+public partial class UMetaLod 
+{
+    public UMetaLod()
+    {
+        _initDefault();
+    }
+
     public void AddTarget(IMetaLodTarget target)
     {
         if (!_targets.Contains(target))
@@ -60,42 +69,15 @@ public class UMetaLod
         }
     }
 
-    public void UpdateTargets()
+    public void Update()
     {
-        foreach (var target in _targets)
+        if (_updateTime())
         {
-            UpdateLiveness(target);
+            _updateHeatAttenuation();
+            _updateTargets();
         }
     }
 
-    private void UpdateLiveness(IMetaLodTarget target)
-    {
-        float distance = target.GetDistance();
-
-        float factorRate = 0.0f;
-        factorRate += _factorBounds.Calculate(target.GetFactorBounds());
-        factorRate += _factorBounds.Calculate(target.GetFactorBounds());
-        factorRate += _factorBounds.Calculate(target.GetFactorBounds());
-        factorRate += _factorBounds.Calculate(target.GetFactorBounds());
-
-        foreach (var factor in _userFactors)
-        {
-            factorRate += factor.Calculate(target.GetUserFactor(factor.Name));
-        }
-
-        distance *= 1.0f + factorRate;
-
-        float liveness = _heatAtte.CalculateLiveness(distance);
-        target.SetLiveness(liveness);
-    }
-
-    private HashSet<IMetaLodTarget> _targets = new HashSet<IMetaLodTarget>();
-    private UHeatAttenuation _heatAtte = new UHeatAttenuation();
-    
-    private HashSet<UImpactFactor> _userFactors;
-
-    private UImpactFactor _factorBounds = new UImpactFactor();
-    private UImpactFactor _factorGeomComplexity = new UImpactFactor();
-    private UImpactFactor _factorPSysComplexity = new UImpactFactor();
-    private UImpactFactor _factorVisualImpact = new UImpactFactor();
+    // accessor to built-in factors (use this to modify default parameters in these factors)
+    public UImpactFactor GetSysFactor(string name) { return _getSysFactor(name); }
 }
