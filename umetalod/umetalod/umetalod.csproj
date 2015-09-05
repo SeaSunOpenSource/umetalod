@@ -42,7 +42,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Unity-5.0.1f1\UnityEngine.dll</HintPath>
+      <HintPath>..\Unity-4.6.3\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -50,9 +50,6 @@
     <Compile Include="UMetaLod.cs" />
     <Compile Include="UMetaLodDef.cs" />
     <Compile Include="UMetaLod_Impl.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="UnityEngine.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

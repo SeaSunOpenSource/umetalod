@@ -55,22 +55,25 @@ public partial class UMetaLod
 
     private void _updateLiveness(IMetaLodTarget target)
     {
-        // impact factors accumulation
-        float factorRate = 1.0f;
-        factorRate -= _calculateImpact(_factorBounds, target.GetFactorBounds());
-        factorRate -= _calculateImpact(_factorGeomComplexity, target.GetFactorGeomComplexity());
-        factorRate -= _calculateImpact(_factorPSysComplexity, target.GetFactorPSysComplexity());
-        factorRate -= _calculateImpact(_factorVisualImpact, target.GetFactorVisualImpact());
+        UMetaLodTargetFactorInfo factorInfo = new UMetaLodTargetFactorInfo();
+        factorInfo.FactorRate_Bounds = _calculateImpact(_factorBounds, target.GetFactorBounds());
+        factorInfo.FactorRate_GeomComplexity = _calculateImpact(_factorGeomComplexity, target.GetFactorGeomComplexity());
+        factorInfo.FactorRate_PSysComplexity = _calculateImpact(_factorPSysComplexity, target.GetFactorPSysComplexity());
+        factorInfo.FactorRate_VisualImpact = _calculateImpact(_factorBounds, target.GetFactorBounds());
+        factorInfo.FactorRate_UserFactors = 0.0f;
         foreach (var factor in _userFactors)
-            factorRate -= _calculateImpact(factor, target.GetUserFactor(factor.Name));
+            factorInfo.FactorRate_UserFactors += _calculateImpact(factor, target.GetUserFactor(factor.Name));
+
+        // impact factors accumulation
+        float factorRate = 1.0f - factorInfo.GetAccumulated();
 
         // perform liveness calculation
         float distance = target.GetDistance() * factorRate;
         float liveness = 1.0f - UMetaLodUtil.Percent(_distInnerAttenuated, _distOuterAttenuated, distance);
         target.SetLiveness(liveness);
 
-        _dbgPrintToTarget(target, "factorRate: {0}, distInner: {1}, distOuter: {2}, liveness: {3}, (fps: {4})",
-            factorRate, _distInnerAttenuated, _distOuterAttenuated, liveness, _currentFPS);
+        if (UMetaLodConfig.EnableDebuggingOutput)
+            target.OutputDebugInfo(ref factorInfo);            
     }
 
     private UImpactFactor _getSysFactor(string name)
@@ -82,14 +85,6 @@ public partial class UMetaLod
             case UMetaLodConst.Factor_PSysComplexity: return _factorPSysComplexity;
             case UMetaLodConst.Factor_VisualImpact: return _factorVisualImpact;
             default: return new UImpactFactor();
-        }
-    }
-
-    private void _dbgPrintToTarget(IMetaLodTarget target, string fmt, params object[] args)
-    {
-        if (UMetaLodConfig.EnableDebuggingOutput)
-        {
-            target.DebugOutput(fmt, args);
         }
     }
 
@@ -106,7 +101,6 @@ public partial class UMetaLod
     // heat attenuation 
     private float _distInnerAttenuated;
     private float _distOuterAttenuated;
-
     private float _currentFPS;
 
     // internal states

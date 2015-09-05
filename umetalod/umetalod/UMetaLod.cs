@@ -2,6 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public struct UMetaLodTargetFactorInfo
+{
+    public float FactorRate_Bounds;
+    public float FactorRate_GeomComplexity;
+    public float FactorRate_PSysComplexity;
+    public float FactorRate_VisualImpact;
+    public float FactorRate_UserFactors;
+
+    public float GetAccumulated()
+    {
+        return FactorRate_Bounds + FactorRate_GeomComplexity + FactorRate_PSysComplexity + FactorRate_VisualImpact + FactorRate_UserFactors;
+    }
+}
+
 public interface IMetaLodTarget
 {
     float GetDistance();
@@ -13,7 +27,7 @@ public interface IMetaLodTarget
 
     void SetLiveness(float liveness);
 
-    void DebugOutput(string fmt, params object[] args);
+    void OutputDebugInfo(ref UMetaLodTargetFactorInfo debugInfo);
 }
 
 public static class UMetaLodConfig
@@ -86,6 +100,15 @@ public partial class UMetaLod
             _updateHeatAttenuation();
             _updateTargets();
         }
+    }
+
+    public float DistInnerAttenuated
+    {
+        get { return _distInnerAttenuated; }
+    }
+    public float DistOuterAttenuated
+    {
+        get { return _distOuterAttenuated; }
     }
 
     // accessor to targets
