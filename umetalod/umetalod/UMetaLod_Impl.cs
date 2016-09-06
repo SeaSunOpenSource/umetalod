@@ -72,10 +72,11 @@ namespace umlod
             // perform liveness calculation
             float distance = target.GetDistance() * factorRate;
             float liveness = 1.0f - UMetaLodUtil.Percent(_distInnerAttenuated, _distOuterAttenuated, distance);
-            target.SetLiveness(liveness);
 
             if (UMetaLodConfig.EnableDebuggingOutput)
                 target.OutputDebugInfo(ref factorInfo);
+
+            target.SetLiveness(liveness);
         }
 
         private UImpactFactor _getSysFactor(string name)

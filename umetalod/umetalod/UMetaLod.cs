@@ -47,11 +47,11 @@ namespace umlod
         public static UPerfLevel PerformanceLevel = UPerfLevel.Medium;
         // performance level magnifier
         public static Dictionary<UPerfLevel, float> PerfLevelScaleLut = new Dictionary<UPerfLevel, float> 
-    {
-        { UPerfLevel.Highend, 0.2f },
-        { UPerfLevel.Medium, 0.0f },
-        { UPerfLevel.Lowend, -0.2f },
-    };
+        {
+            { UPerfLevel.Highend, 0.2f },
+            { UPerfLevel.Medium, 0.0f },
+            { UPerfLevel.Lowend, -0.2f },
+        };
 
         // heat attenuation parameters overriding (including the formula)
         public static float DistInnerBound = 80.0f;
